@@ -120,6 +120,12 @@ export const EmployeeProvider = (props: any) =>
 
     const updateEmployee = async (employee: EmployeeType) =>
     {
+        if (!isValidPayload(employee))
+        {
+            alert('Please fill in all fields')
+            return;
+        }
+
         try
         {
             await updateEmployeeOnApi(employee);
@@ -149,6 +155,12 @@ export const EmployeeProvider = (props: any) =>
 
     const saveNewEmployee = async (employee: EmployeeType) =>
     {
+        if (!isValidPayload(employee))
+        {
+            alert('Please fill in all fields')
+            return;
+        }
+
         employee.id = uuidv4();
 
         try
@@ -162,6 +174,14 @@ export const EmployeeProvider = (props: any) =>
         {
             console.log('Save Employee Error: ',error)
         }
+    }
+
+    const isValidPayload = (employee: EmployeeType) =>
+    {
+        return !(isNullOrWhitespace(employee.firstName)
+            || isNullOrWhitespace(employee.lastName)
+            || isNullOrWhitespace(employee.employeeNumber)
+            || isNullOrWhitespace(employee.grossSalary));
     }
 
     const viewSelectedEmployee = (employee: EmployeeType) =>
