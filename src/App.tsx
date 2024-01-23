@@ -2,24 +2,19 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+import { EmployeeProvider } from "./core/context/EmployeeProvider";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {EmployeePage} from "./ui/pages/EmployeePage";
+
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <BrowserRouter>
+        <EmployeeProvider>
+          <Routes>
+            <Route path='/' element={<EmployeePage />}/>
+          </Routes>
+        </EmployeeProvider>
+      </BrowserRouter>
   );
 }
 
