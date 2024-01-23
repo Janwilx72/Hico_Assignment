@@ -32,5 +32,7 @@ export type EmployeeContextType =
     saveNewEmployee: (employee: EmployeeType) => void,
     updateEmployee: (employee: EmployeeType) => void,
     viewSelectedEmployee: (employee: EmployeeType) => void,
-    toggleIsNewEmployee: (isNewEmployee: boolean) => void
+    toggleIsNewEmployee: (isNewEmployee: boolean) => void,
+
+    getEmployeesFromApi: () => void
 }

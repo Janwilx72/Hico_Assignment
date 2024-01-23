@@ -7,16 +7,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import cors from 'cors';
 import express from 'express';
-import employeeRepository from './database/repositories/employeeRepository';
+import { insertEmployee, getAllEmployees, updateEmployee, initialiseDatabase, clearTable } from './database/repositories/employeeRepository.js';
 const app = express();
 app.use(express.json());
-const repository = new employeeRepository();
+app.use(cors());
 // Route to add a new employee
 app.post('/employees', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log('Create Employee-Request: ', req);
         const newEmployee = req.body;
-        yield repository.insertEmployee(newEmployee);
+        console.log('Create Employee-Employee: ', newEmployee);
+        yield initialiseDatabase();
+        yield insertEmployee(newEmployee);
         res.status(201).send('Employee added successfully');
     }
     catch (error) {
@@ -26,11 +30,13 @@ app.post('/employees', (req, res) => __awaiter(void 0, void 0, void 0, function*
 // Route to get an employee by ID
 app.get('/employees', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const employees = yield repository.getAllEmployees();
+        yield initialiseDatabase();
+        const employees = yield getAllEmployees();
         if (employees) {
             res.status(200).json(employees);
         }
         else {
+            console.log('Get Employees Error: ');
             res.status(404).send('Employee not found');
         }
     }
@@ -41,10 +47,27 @@ app.get('/employees', (req, res) => __awaiter(void 0, void 0, void 0, function* 
 app.post('/employees/update', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const employeePayload = req.body;
-        yield repository.updateEmployee(employeePayload);
+        console.log('Employee Update Body: ', employeePayload);
+        yield initialiseDatabase();
+        yield updateEmployee(employeePayload);
         res.status(201).send('Employee updated successfully');
     }
     catch (error) {
+        console.log('Error Updating Employee: ', error);
         res.status(500).send('Error updating employee');
     }
 }));
+app.post('/clear', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield initialiseDatabase();
+        yield clearTable();
+        res.status(201).send('Employee updated successfully');
+    }
+    catch (error) {
+        res.status(500);
+    }
+}));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

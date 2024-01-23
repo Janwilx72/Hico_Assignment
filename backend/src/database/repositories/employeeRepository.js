@@ -9,17 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
-export default class employeeRepository {
-    constructor() {
-        this.initializeDatabase();
-    }
-    initializeDatabase() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.db = yield open({
-                filename: './mydatabase.db',
-                driver: sqlite3.Database
-            });
-            yield this.db.run(`CREATE TABLE IF NOT EXISTS employees (
+let db;
+export const initialiseDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
+    db = yield open({
+        filename: './mydatabase.db',
+        driver: sqlite3.Database
+    });
+    yield db.run(`CREATE TABLE IF NOT EXISTS employees (
             id TEXT PRIMARY KEY,
             firstName TEXT,
             lastName TEXT,
@@ -29,30 +25,29 @@ export default class employeeRepository {
             profileColourId INTEGER,
             genderId INTEGER
         )`);
-        });
-    }
-    insertEmployee(employee) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
-            const insertStatement = `INSERT INTO employees (id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId)
+});
+export const clearTable = () => __awaiter(void 0, void 0, void 0, function* () {
+    const clearTableStatement = 'DELETE FROM employees';
+    yield db.run(clearTableStatement);
+});
+export const insertEmployee = (employee) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
+    const insertStatement = `INSERT INTO employees (id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId)
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-            yield this.db.run(insertStatement, id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId);
-        });
+    yield db.run(insertStatement, id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId);
+});
+export const getAllEmployees = () => __awaiter(void 0, void 0, void 0, function* () {
+    const stmt = `SELECT * FROM employees`;
+    const employees = yield db.all(stmt);
+    console.log('Employees: ', employees);
+    return employees;
+});
+export const updateEmployee = (employee) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!employee.id) {
+        throw new Error("Employee ID is required for update");
     }
-    getAllEmployees() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const stmt = `SELECT * FROM employees`;
-            const employees = yield this.db.get(stmt);
-            return employees;
-        });
-    }
-    updateEmployee(employee) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!employee.id) {
-                throw new Error("Employee ID is required for update");
-            }
-            const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
-            const stmt = `UPDATE employees SET 
+    const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
+    const stmt = `UPDATE employees SET 
                       firstName = ?, 
                       lastName = ?, 
                       salutationId = ?, 
@@ -61,7 +56,5 @@ export default class employeeRepository {
                       profileColourId = ?, 
                       genderId = ?
                       WHERE id = ?`;
-            yield this.db.run(stmt, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId, id);
-        });
-    }
-}
+    yield db.run(stmt, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId, id);
+});

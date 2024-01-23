@@ -2,24 +2,16 @@ import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import {EmployeeType} from "../../core/types/employeeType";
 
-export default class employeeRepository
+let db: Database;
+
+export const initialiseDatabase = async () =>
 {
-    // @ts-ignore
-    private db: Database;
+    db = await open({
+        filename: './mydatabase.db',
+        driver: sqlite3.Database
+    });
 
-    constructor()
-    {
-        this.initializeDatabase();
-    }
-
-    private async initializeDatabase()
-    {
-        this.db = await open({
-            filename: './mydatabase.db',
-            driver: sqlite3.Database
-        });
-
-        await this.db.run(`CREATE TABLE IF NOT EXISTS employees (
+    await db.run(`CREATE TABLE IF NOT EXISTS employees (
             id TEXT PRIMARY KEY,
             firstName TEXT,
             lastName TEXT,
@@ -29,32 +21,39 @@ export default class employeeRepository
             profileColourId INTEGER,
             genderId INTEGER
         )`);
-    }
+}
 
-    public async insertEmployee(employee: EmployeeType): Promise<void>
-    {
-        const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
-        const insertStatement = `INSERT INTO employees (id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId)
+export const clearTable = async() =>
+{
+    const clearTableStatement = 'DELETE FROM employees';
+    await db.run(clearTableStatement);
+}
+
+export const insertEmployee = async (employee: EmployeeType) =>
+{
+    const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
+    const insertStatement = `INSERT INTO employees (id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId)
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-        await this.db.run(insertStatement, id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId);
+    await db.run(insertStatement, id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId);
+}
+
+export const getAllEmployees = async () =>
+{
+    const stmt = `SELECT * FROM employees`;
+    const employees: EmployeeType[] | undefined = await db.all(stmt);
+    console.log('Employees: ', employees);
+    return employees as EmployeeType[] | null;
+}
+
+export const updateEmployee = async (employee: EmployeeType) =>
+{
+    if (!employee.id)
+    {
+        throw new Error("Employee ID is required for update");
     }
 
-    public async getAllEmployees(): Promise<EmployeeType[] | null>
-    {
-        const stmt = `SELECT * FROM employees`;
-        const employees: EmployeeType[] | undefined = await this.db.get(stmt);
-        return employees as EmployeeType[] | null;
-    }
-
-    public async updateEmployee(employee: EmployeeType): Promise<void>
-    {
-        if (!employee.id)
-        {
-            throw new Error("Employee ID is required for update");
-        }
-
-        const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
-        const stmt = `UPDATE employees SET 
+    const { id, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId } = employee;
+    const stmt = `UPDATE employees SET 
                       firstName = ?, 
                       lastName = ?, 
                       salutationId = ?, 
@@ -63,6 +62,5 @@ export default class employeeRepository
                       profileColourId = ?, 
                       genderId = ?
                       WHERE id = ?`;
-        await this.db.run(stmt, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId, id);
-    }
+    await db.run(stmt, firstName, lastName, salutationId, employeeNumber, grossSalary, profileColourId, genderId, id);
 }

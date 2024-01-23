@@ -6,6 +6,7 @@ import {ColourType} from "../types/models/ColourType";
 import {isAlphabetical, isCurrencyValue, isNullOrWhitespace, isNumeric} from "../utils/TextUtil";
 import {TextWithIdType} from "../types/models/TextWithIdType";
 import {v4 as uuidv4} from 'uuid';
+import {getAllEmployees, insertEmployee, updateEmployeeOnApi} from "../api/ApiServer";
 
 export const EmployeeProvider = (props: any) =>
 {
@@ -117,32 +118,50 @@ export const EmployeeProvider = (props: any) =>
         });
     }
 
-    const updateEmployee = (employee: EmployeeType) =>
+    const updateEmployee = async (employee: EmployeeType) =>
     {
-        setAllEmployees(prevState => allEmployees.map(emp =>
-            emp.id === employee.id
-                ? {
-                    id: employee.id,
-                    firstName: employee.firstName,
-                    lastName: employee.lastName,
-                    salutationId: employee.salutationId,
-                    employeeNumber: employee.employeeNumber,
-                    grossSalary: employee.grossSalary,
-                    profileColourId: employee.profileColourId,
-                    genderId: employee.genderId
-                }
-                : emp
-        ));
-        setDisplayEmployeeInfo(false);
+        try
+        {
+            await updateEmployeeOnApi(employee);
+            console.log('updated employee')
+            setAllEmployees(prevState => allEmployees.map(emp =>
+                emp.id === employee.id
+                    ? {
+                        id: employee.id,
+                        firstName: employee.firstName,
+                        lastName: employee.lastName,
+                        salutationId: employee.salutationId,
+                        employeeNumber: employee.employeeNumber,
+                        grossSalary: employee.grossSalary,
+                        profileColourId: employee.profileColourId,
+                        genderId: employee.genderId
+                    }
+                    : emp
+            ));
+            setDisplayEmployeeInfo(false);
+        }
+        catch (error)
+        {
+            console.log('Employee update error: ', error)
+            alert('Error Updating Employee')
+        }
     }
 
-    const saveNewEmployee = (employee: EmployeeType) =>
+    const saveNewEmployee = async (employee: EmployeeType) =>
     {
         employee.id = uuidv4();
-        setAllEmployees(oldItems => [...oldItems, employee]);
 
-        setSelectedEmployee(defaultEmployee);
-        setDisplayEmployeeInfo(false);
+        try
+        {
+            await insertEmployee(employee)
+            setAllEmployees(oldItems => [...oldItems, employee]);
+            setSelectedEmployee(defaultEmployee);
+            setDisplayEmployeeInfo(false);
+        }
+        catch (error)
+        {
+            console.log('Save Employee Error: ',error)
+        }
     }
 
     const viewSelectedEmployee = (employee: EmployeeType) =>
@@ -154,6 +173,14 @@ export const EmployeeProvider = (props: any) =>
     {
         setIsNewEmployee(isNewEmployee);
         setDisplayEmployeeInfo(true);
+    }
+
+    const getEmployeesFromApi = async () =>
+    {
+        const employees = await getAllEmployees();
+        console.log(employees);
+        if (employees !== null)
+            setAllEmployees(employees.data)
     }
 
     const provider =
@@ -177,7 +204,10 @@ export const EmployeeProvider = (props: any) =>
         saveNewEmployee,
         updateEmployee,
         viewSelectedEmployee,
-        toggleIsNewEmployee
+        toggleIsNewEmployee,
+
+        // Api
+        getEmployeesFromApi
     }
 
     return (

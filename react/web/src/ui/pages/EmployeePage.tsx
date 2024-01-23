@@ -1,7 +1,7 @@
 import {EmployeeTable} from "../components/tables/EmployeeTable";
 import {EmployeeContext} from "../../core/context/EmployeeContext";
 import {EmployeeContextType} from "../../core/types/EmployeeContextType";
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 import {EmployeeInformation} from "../components/sections/EmployeeInformation";
 
 
@@ -9,9 +9,15 @@ export const EmployeePage = () =>
 {
     const {
         pageLoading, setPageLoading,
-        displayEmployingInfo, setDisplayEmployeeInfo,
-        toggleIsNewEmployee
+        displayEmployingInfo,
+        toggleIsNewEmployee,
+        getEmployeesFromApi
     } = useContext(EmployeeContext) as EmployeeContextType;
+
+    useEffect(() =>
+    {
+        getEmployeesFromApi();
+    }, [])
 
     const clickIsNewEmployee = (isNewEmployee: boolean) =>
     {
